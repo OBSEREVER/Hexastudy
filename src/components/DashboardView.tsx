@@ -44,6 +44,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const triageSubjects = latestSnapshot?.gapAnalysis.immediateTriageSubjects || [];
   const recentDocs = documents.slice(0, 3);
 
+  // Dynamic Points Filter (Allows 5 points, 6 points, etc.)
+  const [excludedSubjectIds, setExcludedSubjectIds] = React.useState<string[]>([]);
+  const visibleSubjects = (latestSnapshot?.subjects || []).filter(
+    (s) => !excludedSubjectIds.includes(s.subjectId)
+  );
+
+  const toggleSubjectOnRadar = (id: string) => {
+    if (excludedSubjectIds.includes(id)) {
+      setExcludedSubjectIds(excludedSubjectIds.filter((x) => x !== id));
+    } else {
+      if (visibleSubjects.length <= 3) {
+        alert('A radar polygon requires at least 3 points.');
+        return;
+      }
+      setExcludedSubjectIds([...excludedSubjectIds, id]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Welcome & Quick Actions */}
@@ -129,9 +147,49 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           {latestSnapshot ? (
-            <div className="pt-2 w-full flex justify-center">
+            <div className="pt-2 w-full flex flex-col items-center">
+              {/* Dynamic Geometry Controller */}
+              <div className="w-full mb-2 p-2.5 rounded-xl bg-neutral-950/70 border border-white/5 space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-neutral-300 font-semibold flex items-center gap-1.5">
+                    <span>Radar Shape:</span>
+                    <span className="font-mono text-sky-400">
+                      {visibleSubjects.length} Points ({visibleSubjects.length === 5 ? 'Pentagon' : visibleSubjects.length === 6 ? 'Hexagon' : `${visibleSubjects.length}-gon`})
+                    </span>
+                  </span>
+                  {excludedSubjectIds.length > 0 && (
+                    <button
+                      onClick={() => setExcludedSubjectIds([])}
+                      className="text-[11px] text-sky-400 hover:underline"
+                    >
+                      Show All ({latestSnapshot.subjects.length})
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {latestSnapshot.subjects.map((sub) => {
+                    const isVisible = !excludedSubjectIds.includes(sub.subjectId);
+                    return (
+                      <button
+                        key={sub.subjectId}
+                        onClick={() => toggleSubjectOnRadar(sub.subjectId)}
+                        className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                          isVisible
+                            ? 'bg-sky-950 text-sky-300 border border-sky-700/60 shadow-sm'
+                            : 'bg-neutral-900 text-neutral-500 border border-white/5 hover:text-neutral-300'
+                        }`}
+                        title={isVisible ? 'Click to exclude this course' : 'Click to include this course on the radar'}
+                      >
+                        {isVisible ? '✓' : '○'} {sub.subjectCode}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <HexagonalRadar
-                subjects={latestSnapshot.subjects}
+                subjects={visibleSubjects}
                 title="Current Health"
                 size={440}
                 onSubjectClick={() => onNavigate('results')}

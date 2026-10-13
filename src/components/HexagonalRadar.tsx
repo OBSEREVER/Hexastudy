@@ -33,6 +33,26 @@ export const HexagonalRadar: React.FC<HexagonalRadarProps> = ({
   const radius = size * 0.38;
   const count = Math.max(subjects.length, 3);
 
+  // Dynamic geometry name based on points count
+  const shapeName = useMemo(() => {
+    switch (count) {
+      case 3:
+        return '3-Point Triangle';
+      case 4:
+        return '4-Point Diamond';
+      case 5:
+        return '5-Point Pentagon';
+      case 6:
+        return '6-Point Hexagon';
+      case 7:
+        return '7-Point Heptagon';
+      case 8:
+        return '8-Point Octagon';
+      default:
+        return `${count}-Point Polygon`;
+    }
+  }, [count]);
+
   // Concentric polygon grid levels: 1, 2, 3, 4, 5
   const gridLevels = [1, 2, 3, 4, 5];
 
@@ -301,11 +321,15 @@ export const HexagonalRadar: React.FC<HexagonalRadarProps> = ({
 
       {/* Legend & Export Controls */}
       <div className="flex items-center justify-between w-full max-w-md mt-4 px-3 py-2 bg-neutral-900/60 rounded-lg border border-white/5 text-xs">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-sky-400 ring-2 ring-sky-400/30" />
             <span className="text-neutral-300 font-medium">{title}</span>
           </div>
+
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800/40 font-semibold">
+            {shapeName}
+          </span>
 
           {comparePoints && (
             <div className="flex items-center gap-2">

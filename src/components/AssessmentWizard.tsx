@@ -47,6 +47,10 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   onComplete,
   onCancel,
 }) => {
+  // Only interview active subjects (allows 5 points, 6 points, or any custom count)
+  const activeSubs = subjects.filter((s) => s.isActiveInRadar !== false);
+  const interviewSubjects = activeSubs.length >= 3 ? activeSubs : subjects;
+
   const [assessmentTitle, setAssessmentTitle] = useState(
     `Academic Diagnostic (${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})`
   );
@@ -57,7 +61,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   // Assessment inputs indexed by subjectId
   const [inputs, setInputs] = useState<Record<string, SubjectAssessmentInput>>(() => {
     const initial: Record<string, SubjectAssessmentInput> = {};
-    subjects.forEach((s) => {
+    interviewSubjects.forEach((s) => {
       initial[s.id] = {
         subjectId: s.id,
         subjectName: s.name,
@@ -82,7 +86,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
     return initial;
   });
 
-  const currentSubject = subjects[currentSubjectIndex];
+  const currentSubject = interviewSubjects[currentSubjectIndex];
   const currentDimensionKey = DIMENSION_KEYS[currentDimensionIndex];
   const currentDimensionMeta = DIMENSIONS[currentDimensionKey];
   const currentSubjectInput = inputs[currentSubject?.id];
@@ -143,7 +147,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   const handleNext = () => {
     if (currentDimensionIndex < DIMENSION_KEYS.length - 1) {
       setCurrentDimensionIndex((prev) => prev + 1);
-    } else if (currentSubjectIndex < subjects.length - 1) {
+    } else if (currentSubjectIndex < interviewSubjects.length - 1) {
       setCurrentSubjectIndex((prev) => prev + 1);
       setCurrentDimensionIndex(0);
     } else {
@@ -162,14 +166,14 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
   };
 
   const handleFinish = () => {
-    const list = Object.values(inputs);
+    const list = interviewSubjects.map((s) => inputs[s.id]).filter(Boolean);
     const snapshot = compileAssessmentSnapshot(assessmentTitle.trim() || 'Academic Assessment', list, false);
     hexaStore.addAssessment(snapshot);
     onComplete(snapshot);
   };
 
   // Overall Progress
-  const totalQuestions = subjects.length * DIMENSION_KEYS.length;
+  const totalQuestions = interviewSubjects.length * DIMENSION_KEYS.length;
   const currentQuestionNumber = currentSubjectIndex * DIMENSION_KEYS.length + currentDimensionIndex + 1;
   const progressPercent = Math.round((currentQuestionNumber / totalQuestions) * 100);
 
@@ -196,7 +200,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
             placeholder="Assessment Name..."
           />
           <div className="flex items-center gap-2 text-xs text-neutral-400 mt-1 font-mono">
-            <span>Subject {currentSubjectIndex + 1} of {subjects.length}</span>
+            <span>Subject {currentSubjectIndex + 1} of {interviewSubjects.length}</span>
             <span>·</span>
             <span>Dimension {currentDimensionIndex + 1} of 5</span>
             <span>·</span>
@@ -350,9 +354,9 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({
             className="flex items-center gap-1.5 px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-sm transition-colors"
           >
             <span>
-              {currentSubjectIndex === subjects.length - 1 &&
+              {currentSubjectIndex === interviewSubjects.length - 1 &&
               currentDimensionIndex === DIMENSION_KEYS.length - 1
-                ? 'Finish & View Hexagonal Radar'
+                ? `Finish & View ${interviewSubjects.length}-Point Radar`
                 : 'Next Question'}
             </span>
             <ArrowRight className="w-4 h-4" />

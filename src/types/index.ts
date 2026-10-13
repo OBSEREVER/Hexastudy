@@ -91,6 +91,7 @@ export interface Subject {
   targetGrade?: string;
   chapters: Chapter[];
   isPreloaded?: boolean;
+  isActiveInRadar?: boolean; // When false, excluded from radar assessment to allow 5, 4, or custom N points
 }
 
 export interface SubjectAssessmentInput {

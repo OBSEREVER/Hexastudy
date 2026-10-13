@@ -43,6 +43,26 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [activeTab, setActiveTab] = useState<'radar' | 'report' | 'ai'>('radar');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(snapshot.subjects[0]?.subjectId || '');
 
+  // Modifiable Radar Points Filter (Allows 5 points, 6 points, etc.)
+  const [excludedSubjectIds, setExcludedSubjectIds] = useState<string[]>([]);
+
+  const visibleSubjects = snapshot.subjects.filter((s) => !excludedSubjectIds.includes(s.subjectId));
+  const visibleComparisonSubjects = comparisonSnapshot?.subjects.filter(
+    (s) => !excludedSubjectIds.includes(s.subjectId)
+  );
+
+  const toggleSubjectOnRadar = (id: string) => {
+    if (excludedSubjectIds.includes(id)) {
+      setExcludedSubjectIds(excludedSubjectIds.filter((x) => x !== id));
+    } else {
+      if (visibleSubjects.length <= 3) {
+        alert('A radar polygon requires at least 3 points.');
+        return;
+      }
+      setExcludedSubjectIds([...excludedSubjectIds, id]);
+    }
+  };
+
   // AI Narrative State (Optional Plug-in)
   const [aiNarrative, setAiNarrative] = useState<AINarrative | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -351,12 +371,49 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Responsive Radar Chart */}
           <div className="lg:col-span-6 p-6 rounded-2xl bg-neutral-900/60 border border-white/10 flex flex-col items-center justify-center">
-            <h3 className="text-sm font-semibold text-neutral-300 mb-2">
-              6-Axis Proficiency Radar Polygon
-            </h3>
+            {/* Dynamic Geometry Controller: 5 Points vs 6 Points vs Custom */}
+            <div className="w-full mb-3 p-3 rounded-xl bg-neutral-950/70 border border-white/5 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-neutral-300 font-semibold flex items-center gap-1.5">
+                  <span>Radar Geometry:</span>
+                  <span className="font-mono text-sky-400">
+                    {visibleSubjects.length} Points ({visibleSubjects.length === 5 ? 'Pentagon' : visibleSubjects.length === 6 ? 'Hexagon' : `${visibleSubjects.length}-gon`})
+                  </span>
+                </span>
+                {excludedSubjectIds.length > 0 && (
+                  <button
+                    onClick={() => setExcludedSubjectIds([])}
+                    className="text-[11px] text-sky-400 hover:underline"
+                  >
+                    Reset All ({snapshot.subjects.length})
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {snapshot.subjects.map((sub) => {
+                  const isVisible = !excludedSubjectIds.includes(sub.subjectId);
+                  return (
+                    <button
+                      key={sub.subjectId}
+                      onClick={() => toggleSubjectOnRadar(sub.subjectId)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                        isVisible
+                          ? 'bg-sky-950 text-sky-300 border border-sky-700/60 shadow-sm'
+                          : 'bg-neutral-900 text-neutral-500 border border-white/5 hover:text-neutral-300'
+                      }`}
+                      title={isVisible ? 'Click to toggle off this point' : 'Click to include this point on the radar'}
+                    >
+                      {isVisible ? '✓' : '○'} {sub.subjectCode}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <HexagonalRadar
-              subjects={snapshot.subjects}
-              compareSubjects={comparisonSnapshot?.subjects}
+              subjects={visibleSubjects}
+              compareSubjects={visibleComparisonSubjects}
               title={snapshot.title}
               compareTitle={comparisonSnapshot?.title}
               onSubjectClick={(id) => setSelectedSubjectId(id)}

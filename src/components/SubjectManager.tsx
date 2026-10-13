@@ -58,6 +58,16 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({ subjects, onSubj
     hexaStore.saveSubjects(copy);
   };
 
+  // Toggle active in radar polygon (allows 5 points, 6 points, etc.)
+  const handleToggleActiveInRadar = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = subjects.map((s) =>
+      s.id === id ? { ...s, isActiveInRadar: s.isActiveInRadar === false ? true : false } : s
+    );
+    onSubjectsChange(updated);
+    hexaStore.saveSubjects(updated);
+  };
+
   // Add Subject
   const handleCreateSubject = (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,14 +244,17 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({ subjects, onSubj
         {/* Left Column: Subjects Reorder List */}
         <div className="lg:col-span-5 space-y-3">
           <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
-            <span>Subject Queue ({subjects.length} active)</span>
-            <span>Click to view chapters</span>
+            <span>Subject Queue ({subjects.length} courses)</span>
+            <span className="text-[11px] font-mono text-sky-400 font-semibold">
+              Radar: {subjects.filter((s) => s.isActiveInRadar !== false).length} Points ({subjects.filter((s) => s.isActiveInRadar !== false).length === 5 ? 'Pentagon' : subjects.filter((s) => s.isActiveInRadar !== false).length === 6 ? 'Hexagon' : `${subjects.filter((s) => s.isActiveInRadar !== false).length}-gon`})
+            </span>
           </div>
 
           <div className="space-y-2">
             {subjects.map((sub, idx) => {
               const isSelected = sub.id === selectedSubject?.id;
               const completedCount = sub.chapters.filter((c) => c.completed).length;
+              const isInRadar = sub.isActiveInRadar !== false;
 
               return (
                 <div
@@ -263,6 +276,17 @@ export const SubjectManager: React.FC<SubjectManagerProps> = ({ subjects, onSubj
                           Demo
                         </span>
                       )}
+                      <button
+                        onClick={(e) => handleToggleActiveInRadar(sub.id, e)}
+                        className={`text-[10px] font-mono px-1.5 py-0.2 rounded border transition-colors ${
+                          isInRadar
+                            ? 'bg-sky-950/80 text-sky-300 border-sky-800/40 hover:bg-sky-900'
+                            : 'bg-neutral-900 text-neutral-500 border-white/5 hover:text-neutral-300'
+                        }`}
+                        title="Click to toggle whether this subject appears as a point on the radar"
+                      >
+                        {isInRadar ? '✓ In Radar' : '○ Excluded'}
+                      </button>
                     </div>
                     <h4 className="text-sm font-semibold text-white mt-0.5 line-clamp-1">
                       {sub.name}
