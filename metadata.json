@@ -1,0 +1,6 @@
+{
+  "name": "HexaStudy",
+  "description": "Windows 11 local-first academic proficiency assessor, study planning workstation, and CSE material vault.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

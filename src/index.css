@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --mica-bg: #1e1e1e;
+    --mica-alt: #181818;
+    --mica-surface: #262626;
+    --mica-card: #2b2b2b;
+    --mica-card-hover: #323232;
+    --mica-border: rgba(255, 255, 255, 0.08);
+    --mica-border-strong: rgba(255, 255, 255, 0.16);
+    --accent-blue: #0078d4;
+    --accent-blue-light: #60cdff;
+    --accent-blue-subtle: rgba(96, 205, 255, 0.12);
+    --accent-green: #22c55e;
+    --accent-amber: #f59e0b;
+    --accent-red: #ef4444;
+    --text-primary: #f3f3f3;
+    --text-secondary: #a6a6a6;
+    --text-muted: #737373;
+  }
+
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--mica-bg);
+    color: var(--text-primary);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    text-wrap: balance;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-feature-settings: 'tnum' on, 'zero' on;
+  }
+}
+
+/* Custom Windows 11 style scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Windows 11 Mica & Acrylic glass effects */
+.mica-canvas {
+  background: linear-gradient(135deg, #1b1b1b 0%, #151515 50%, #111111 100%);
+  position: relative;
+}
+
+.mica-canvas::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 10% 20%, rgba(96, 205, 255, 0.04) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(0, 120, 212, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.mica-surface {
+  background: rgba(43, 43, 43, 0.85);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--mica-border);
+}
+
+.mica-card {
+  background: rgba(38, 38, 38, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--mica-border);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mica-card:hover {
+  border-color: var(--mica-border-strong);
+  background: rgba(46, 46, 46, 0.85);
+}
+
+.window-titlebar {
+  app-region: drag;
+  -webkit-app-region: drag;
+}
+
+.window-control-btn {
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+/* Print styling for reports */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .mica-card, .mica-surface {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+}
